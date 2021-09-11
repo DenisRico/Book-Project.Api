@@ -26,6 +26,7 @@ namespace MyProject.Api.Controllers
 
             try
             {
+                Response.Cookies.Append("Name","Tom");
                 return Ok(await _service.Get(id));
             }
             catch (Exception ex)
