@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using MyProject.Api.Configuration;
+using MyProject.BL;
 using MyProject.BL.Configuration;
 using MyProject.Dal.Configuration;
 using MyProject.Dal.SqlContext;
@@ -41,6 +42,11 @@ namespace MyProject.Api
             options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
 
+            AuthentificationConfiguration authentificationConfiguration = new AuthentificationConfiguration();
+            services.AddSingleton(authentificationConfiguration);
+
+            Configuration.Bind("Jwt", authentificationConfiguration);
+
             services.AddSwaggerDocument(c =>
             {
                 c.AddSecurity("JWT", new OpenApiSecurityScheme
@@ -73,7 +79,7 @@ namespace MyProject.Api
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = Configuration["Jwt:Issuer"],
                         ValidAudience = Configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:AccesTokenSecret"])),
                         ClockSkew = TimeSpan.Zero
                     };
                     options.Events = new JwtBearerEvents

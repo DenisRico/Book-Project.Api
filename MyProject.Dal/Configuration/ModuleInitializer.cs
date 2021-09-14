@@ -30,6 +30,7 @@ namespace MyProject.Dal.Configuration
 		{
 			services.AddTransient<IBookRepository, BookRepository>();
 			services.AddTransient<IGenreRepository, GenreRepository>();
+			services.AddTransient<IUserRepository, UserRepository>();
 
 		}
 	}
