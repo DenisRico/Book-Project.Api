@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using MyProject.Common.Models.ClientModel;
 using MyProject.Common.Services;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MyProject.Api.Controllers
@@ -15,12 +13,9 @@ namespace MyProject.Api.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class BookController : ControllerBase
+    public class BookController : MPControllerBase
     {
         private readonly IBookService _service;
-        public string ClientIPAddr { get; private set; }
-        public string LocalIPAddr { get; private set; }
-
 
         public BookController(IBookService service)
         {
@@ -31,14 +26,7 @@ namespace MyProject.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetBooks()
         {
-            // Retrieve client IP address through HttpContext.Connection
-            ClientIPAddr = HttpContext.Connection.RemoteIpAddress?.ToString();
-            //var c = Page();
-            // Retreive server/local IP address
-            var feature = HttpContext.Features.Get<IHttpConnectionFeature>();
-            LocalIPAddr = feature?.LocalIpAddress?.ToString();
-
-            //var b = Page();
+            var info = GetAuthInfo();
             try
             {
                 return Ok(await _service.GetAll());
@@ -120,7 +108,5 @@ namespace MyProject.Api.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex);
             }
         }
-
-
     }
 }
