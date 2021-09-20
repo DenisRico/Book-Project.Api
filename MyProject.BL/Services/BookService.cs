@@ -22,6 +22,10 @@ namespace MyProject.BL.Services
             _mapper = mapper;
         }
 
+        public BookService()
+        {
+        }
+
         public async Task<IEnumerable<BookViewModel>> GetAll()
         {
             var query = await _bookRepository.GetOdered();

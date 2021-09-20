@@ -22,6 +22,10 @@ namespace MyProject.Api.Controllers
             _service = service;
         }
 
+        public BookController()
+        {
+        }
+
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<BookViewModel>))]
         [HttpGet]
         public async Task<IActionResult> GetBooks()

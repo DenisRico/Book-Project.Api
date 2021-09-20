@@ -13,6 +13,7 @@ using MyProject.Common.Models.Responses;
 using MyProject.Common.Services;
 using MyProject.Common.Models.Domain;
 using MyProject.BL.TokenValidators;
+using Microsoft.Extensions.Logging;
 
 namespace MyProject.Api.Controllers
 {
@@ -26,10 +27,16 @@ namespace MyProject.Api.Controllers
 		private readonly IAuthentificator _authentificator;
 		private readonly RefreshTokenValidator _refreshTokenValidator;
 		private readonly IRefreshTokenService _refreshTokenService;
+		private static readonly string _refreshTokenCookie = "X-Refresh-Token";
+		private readonly ILogger<AuthenticationController> _logger;
 
 		public AuthenticationController(IConfiguration configuration,
 			IUserService userService,
-			IPasswordHasherService passwordHasherService, IAuthentificator authentificator, RefreshTokenValidator refreshTokenValidator, IRefreshTokenService refreshTokenService)
+			IPasswordHasherService passwordHasherService,
+			IAuthentificator authentificator,
+			RefreshTokenValidator refreshTokenValidator,
+			IRefreshTokenService refreshTokenService,
+			ILogger<AuthenticationController> logger)
         {
 			_configuration = configuration;
 			_userService = userService;
@@ -37,6 +44,7 @@ namespace MyProject.Api.Controllers
 			_authentificator = authentificator;
 			_refreshTokenValidator = refreshTokenValidator;
 			_refreshTokenService = refreshTokenService;
+			_logger = logger;
 		}
 
 
@@ -71,6 +79,7 @@ namespace MyProject.Api.Controllers
 		[HttpPost("login")]
 		public async Task<ActionResult> Login([FromBody] LoginRequest loginRequest)
 		{
+			_logger.LogWarning($"Login {loginRequest.UserName}");
 			if (!ModelState.IsValid)
 			{
 				IEnumerable<string> errorMessages = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage));
@@ -90,12 +99,16 @@ namespace MyProject.Api.Controllers
 
 			AuthenticatedUserResponse response = await _authentificator.Auntentificate(user);
 
+			Response.Cookies.Append(_refreshTokenCookie, response.RefreshToken, new CookieOptions() { HttpOnly = true });
+
 			return Ok(response);
 		}
 
 		[HttpPost("refresh")]
 		public async Task<ActionResult> Refresh([FromBody] RefreshRequest refreshRequest)
 		{
+			var refreshToken = Request.Cookies[_refreshTokenCookie];
+
 			if (!ModelState.IsValid)
 			{
 				IEnumerable<string> errorMessages = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage));

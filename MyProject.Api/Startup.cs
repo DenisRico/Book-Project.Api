@@ -6,8 +6,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using MyProject.Api.Configuration;
+using MyProject.Api.Middlewares;
 using MyProject.BL;
 using MyProject.BL.Configuration;
 using MyProject.Dal.Configuration;
@@ -25,6 +27,7 @@ namespace MyProject.Api
         //private readonly IConfiguration configuration;
 
         public IConfiguration Configuration { get; }
+        
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -33,7 +36,6 @@ namespace MyProject.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<MyProjectContext>(options => options.UseSqlServer(connectionString));
 
@@ -125,12 +127,12 @@ namespace MyProject.Api
             {
                 app.UseDeveloperExceptionPage();
             }
-
             app.UseCors("MyPolicy");
             app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseMiddleware<ErrorHandlingMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
